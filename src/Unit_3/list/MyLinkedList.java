@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * Created by huwen on 2017/8/24.
+ * Created by nirpis.hu on 2017/8/24.
  */
 public class MyLinkedList<AnyType> implements Iterable<AnyType> {
 
