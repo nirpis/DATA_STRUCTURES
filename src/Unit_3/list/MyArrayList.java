@@ -1,5 +1,6 @@
 package Unit_3.list;
 
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -14,6 +15,8 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
 
     private AnyType [] theItems;
 
+    private int modCount = 0;
+
     public MyArrayList() {
         doClear();
     }
@@ -25,6 +28,7 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
     private void doClear() {
         theSize = 0;
         ensureCapacity(DEFAULT_CAPACITY);
+        modCount++;
     }
 
     public int size() {
@@ -74,6 +78,7 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
             theItems[i] = theItems[i - 1];
         theItems[idx] = x;
         theSize++;
+        modCount++;
     }
 
     public AnyType remove(int idx) {
@@ -81,6 +86,7 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
         for (int i = idx; i < size() - 1; i++)
             theItems[i] = theItems[i + 1];
         theSize--;
+        modCount++;
         return removeItem;
     }
 
@@ -93,6 +99,10 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
 
         private int current = 0;
 
+        private int expectedModCurrent = modCount;
+
+        private boolean okToRemove = false;
+
         @Override
         public boolean hasNext() {
             return current < size();
@@ -100,13 +110,20 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
 
         @Override
         public AnyType next() {
+            if (modCount != expectedModCurrent)
+                throw new ConcurrentModificationException();
             if (!hasNext())
                 throw new NoSuchElementException();
+            okToRemove = true;
             return theItems[current++];
         }
 
         @Override
         public void remove() {
+            if (modCount != expectedModCurrent)
+                throw new ConcurrentModificationException();
+            if (!okToRemove)
+                throw new IllegalStateException();
             MyArrayList.this.remove(--current);
         }
 
